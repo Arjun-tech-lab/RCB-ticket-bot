@@ -24,36 +24,42 @@ async function sendTelegram(message) {
 }
 
 async function checkTickets() {
-  console.log("Checking...", new Date().toLocaleTimeString());
+  try {
+    console.log("Checking...", new Date().toLocaleTimeString());
 
-  const browser = await chromium.launch({
-    headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
-  });
+    const browser = await chromium.launch({
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
 
-  const page = await browser.newPage();
+    const page = await browser.newPage();
 
-  await page.goto("https://shop.royalchallengers.com/ticket", {
-    waitUntil: "networkidle"
-  });
+    await page.goto("https://shop.royalchallengers.com/ticket", {
+      waitUntil: "domcontentloaded",
+      timeout: 60000
+    });
 
-  await page.waitForTimeout(2000);
+    // allow UI to render
+    await page.waitForTimeout(3000);
 
-  const body = (await page.innerText("body")).toLowerCase();
+    const body = (await page.innerText("body")).toLowerCase();
 
-  const ticketsUnavailable = body.includes("tickets not available");
-  const buyTicketsVisible = body.includes("buy tickets");
-  const hasVs = body.includes(" vs ");
+    const ticketsUnavailable = body.includes("tickets not available");
+    const buyTicketsVisible = body.includes("buy tickets");
+    const hasVs = body.includes(" vs ");
 
-  if (!ticketsUnavailable && buyTicketsVisible && hasVs && !alreadyAlerted) {
-    alreadyAlerted = true;
+    if (!ticketsUnavailable && buyTicketsVisible && hasVs && !alreadyAlerted) {
+      alreadyAlerted = true;
 
-    await sendTelegram(
-      "🚨 RCB Tickets Released!\nhttps://shop.royalchallengers.com/ticket"
-    );
+      await sendTelegram(
+        "🚨 RCB Tickets Released!\nhttps://shop.royalchallengers.com/ticket"
+      );
+    }
+
+    await browser.close();
+  } catch (error) {
+    console.error("Check failed:", error.message);
   }
-
-  await browser.close();
 }
 
 setInterval(checkTickets, 30000);
