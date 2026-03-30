@@ -6,6 +6,11 @@ const axios = require("axios");
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
+if (!TELEGRAM_TOKEN || !CHAT_ID) {
+  console.error("Missing TELEGRAM env variables");
+  process.exit(1);
+}
+
 let alreadyAlerted = false;
 
 async function sendTelegram(message) {
@@ -21,14 +26,17 @@ async function sendTelegram(message) {
 async function checkTickets() {
   console.log("Checking...", new Date().toLocaleTimeString());
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+  });
+
   const page = await browser.newPage();
 
   await page.goto("https://shop.royalchallengers.com/ticket", {
     waitUntil: "networkidle"
   });
 
-  // small wait for UI render
   await page.waitForTimeout(2000);
 
   const body = (await page.innerText("body")).toLowerCase();
