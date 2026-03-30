@@ -1,3 +1,16 @@
+// ---- Render health server (prevents timeout) ----
+const http = require("http");
+
+const PORT = process.env.PORT || 10000;
+
+http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("RCB ticket bot running");
+}).listen(PORT, () => {
+  console.log("Health server running on port", PORT);
+});
+
+// ---- Bot logic ----
 require("dotenv").config();
 
 const { chromium } = require("playwright");
@@ -39,7 +52,6 @@ async function checkTickets() {
       timeout: 60000
     });
 
-    // allow UI to render
     await page.waitForTimeout(3000);
 
     const body = (await page.innerText("body")).toLowerCase();
