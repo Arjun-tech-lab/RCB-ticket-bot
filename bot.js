@@ -51,6 +51,7 @@ async function sendTelegram(message) {
     }
   );
 }
+sendTelegram("🤖 RCB ticket bot started and monitoring...").catch(console.error);
 
 async function checkTickets() {
   try {
