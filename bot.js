@@ -3,6 +3,7 @@ const http = require("http");
 
 const PORT = process.env.PORT || 10000;
 
+
 http.createServer((req, res) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
   res.end("RCB ticket bot running");
@@ -23,6 +24,21 @@ if (!TELEGRAM_TOKEN || !CHAT_ID) {
   console.error("Missing TELEGRAM env variables");
   process.exit(1);
 }
+
+// startup message
+(async () => {
+  try {
+    await axios.post(
+      `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`,
+      {
+        chat_id: CHAT_ID,
+        text: "🤖 RCB ticket bot started and monitoring..."
+      }
+    );
+  } catch (e) {
+    console.error("Startup telegram failed:", e.message);
+  }
+})();
 
 let alreadyAlerted = false;
 
